@@ -58,3 +58,51 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
             new ApiResponse(201, CreatedUser, "User Registered Successfully")
         )
 });
+
+export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    if (typeof email !== 'string' || !email.trim()) {
+        throw new ApiError(400, "Email is required");
+    }
+
+    if (typeof password !== 'string' || !password.trim()) {
+        throw new ApiError(400, "Password is required");
+    }
+
+    const user = await User.findOne({
+        email: email.toLowerCase()
+    });
+
+    if (!user) {
+        throw new ApiError(404, "User Not Found")
+    }
+
+    const isMatch = await (user as unknown as UserType).comparePassword(password);
+
+    if (!isMatch) {
+        throw new ApiError(401, "Invalid Credentials")
+    }
+
+    const Token = (user as unknown as UserType).GenerateAuthToken();
+
+    const LoggedInUser = await User.findById(user._id).select("-password")
+
+    if (!LoggedInUser) {
+        throw new ApiError(500, "Something went wrong logging in User")
+    }
+
+    return res
+        .status(200)
+        .cookie("Token", Token, options)
+        .json(
+            new ApiResponse(200, LoggedInUser, "User Logged In Successfully")
+        )
+});
+
+export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
+    res.clearCookie("Token", options);
+    return res.status(200).json(
+        new ApiResponse(200, null, "User Logged Out Successfully")
+    )
+});
