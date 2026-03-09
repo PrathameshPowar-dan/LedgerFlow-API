@@ -1,5 +1,5 @@
 import express from "express";
-import ConnectDB from "./database/db";
+import ConnectDB from "./database/index";
 import dotenv from "dotenv";
 import userRoutes from "./controllers/user/userRoutes";
 
