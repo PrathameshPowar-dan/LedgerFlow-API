@@ -14,6 +14,8 @@ const options: OptionsType = {
     secure: isProduction,
 }
 
+
+// Register User
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
     const { username, email, password } = req.body;
 
@@ -59,6 +61,8 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
         )
 });
 
+
+// Login User
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
@@ -72,7 +76,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
     const user = await User.findOne({
         email: email.toLowerCase()
-    });
+    }).select("+password");
 
     if (!user) {
         throw new ApiError(404, "User Not Found")
@@ -100,6 +104,8 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
         )
 });
 
+
+// Logout User
 export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
     res.clearCookie("Token", options);
     return res.status(200).json(

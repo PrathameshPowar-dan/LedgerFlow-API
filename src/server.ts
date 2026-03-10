@@ -2,13 +2,14 @@ import express from "express";
 import ConnectDB from "./database/index";
 import dotenv from "dotenv";
 import userRoutes from "./controllers/user/userRoutes";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
-
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
     res.send("Hello, World!");
