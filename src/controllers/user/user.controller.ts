@@ -7,12 +7,12 @@ import { OptionsType, UserType } from "../../types/type";
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-const options: OptionsType = {
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    httpOnly: true,
-    sameSite: "strict",
-    secure: isProduction,
-}
+// const options: OptionsType = {
+//     maxAge: 7 * 24 * 60 * 60 * 1000,
+//     httpOnly: true,
+//     sameSite: "strict",
+//     secure: isProduction,
+// }
 
 
 // Register User
@@ -55,7 +55,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 
     return res
         .status(201)
-        .cookie("Token", Token, options)
+        .cookie("Token", Token)
         .json(
             new ApiResponse(201, CreatedUser, "User Registered Successfully")
         )
@@ -98,7 +98,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
     return res
         .status(200)
-        .cookie("Token", Token, options)
+        .cookie("Token", Token)
         .json(
             new ApiResponse(200, LoggedInUser, "User Logged In Successfully")
         )
@@ -107,7 +107,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
 // Logout User
 export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
-    res.clearCookie("Token", options);
+    res.clearCookie("Token");
     return res.status(200).json(
         new ApiResponse(200, null, "User Logged Out Successfully")
     )
