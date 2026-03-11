@@ -1,8 +1,9 @@
 import { Router } from "express";
 import Auth from "../../middleware/auth";
+import { CreateACC } from "./acc.controller";
 
 const router = Router();
 
-router.use("/", Auth)
+router.post("/create", Auth, CreateACC);
 
 export default router;
