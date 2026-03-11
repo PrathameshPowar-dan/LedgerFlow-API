@@ -3,6 +3,7 @@ import ConnectDB from "./database/index";
 import dotenv from "dotenv";
 import userRoutes from "./controllers/user/userRoutes";
 import cookieParser from "cookie-parser";
+import AllRoutes from "./routes/routes";
 
 dotenv.config();
 
@@ -15,7 +16,7 @@ app.get("/", (req, res) => {
     res.send("Hello, World!");
 });
 
-app.use("/api/users", userRoutes);
+app.use("/api", AllRoutes);
 
 // Connect to the database and start the server
 ConnectDB().then(() => {
