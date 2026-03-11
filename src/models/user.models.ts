@@ -21,10 +21,6 @@ const userSchema = new Schema({
         minlength: [6, "Password must contain atleast 6 Characters"],
         select: false
     },
-    balance: {
-        type: Number,
-        default: 0
-    }
 }, { timestamps: true });
 
 userSchema.pre("save", async function () {
