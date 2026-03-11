@@ -4,6 +4,7 @@ import User from "../../models/user.models";
 import { ApiError } from "../../utils/ApiError";
 import { ApiResponse } from "../../utils/ApiResponse";
 import { OptionsType, UserType } from "../../types/type";
+import { sendRegistrationEmail } from "../../services/email.service";
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -44,6 +45,8 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
         email: email.toLowerCase(),
         password
     });
+
+    await sendRegistrationEmail({ userEmail: user.email, name: user.name });
 
     const Token = (user as unknown as UserType).GenerateAuthToken();
 
