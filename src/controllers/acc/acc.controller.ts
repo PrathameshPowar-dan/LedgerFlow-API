@@ -12,7 +12,7 @@ export const CreateACC = asyncHandler(async (req: Request, res: Response) => {
         user: user._id
     })
 
-    res.status(201).json({
-        account
-    })
+    res.status(201).json(
+        new ApiResponse(201, account, "Account Created!")
+    )
 })
