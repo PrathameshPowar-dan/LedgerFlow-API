@@ -7,6 +7,7 @@ import { ApiResponse } from "../../utils/ApiResponse";
 import mongoose from "mongoose";
 import Ledger from "../../models/ledger.models";
 import { sendTransactionEmail } from "../../services/email.service";
+import { UserType } from "../../types/type";
 
 export const createTransaction = asyncHandler(async (req: Request, res: Response) => {
     const { fromAccount, toAccount, amount, idempotencyKey } = req.body;
@@ -61,8 +62,8 @@ export const createTransaction = asyncHandler(async (req: Request, res: Response
     }
 
     // Balance Check
-    // const balance = await fromUserAccount.getBalance();
-    const balance = 0;
+    const balance = await (fromUserAccount as unknown as UserType).GetBalance();
+    // const balance = 0;
 
     if (balance < amount) {
         throw new ApiError(400, `Insufficient balance. Current balance is ${balance}. Requested amount is ${amount}`)
