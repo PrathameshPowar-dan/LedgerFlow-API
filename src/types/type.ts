@@ -13,6 +13,7 @@ export interface UserType extends Document {
     name: string;
     email: string;
     password?: string;
+    systemUser: boolean,
     GenerateAuthToken: () => string;
     comparePassword: (candidatePassword: string) => Promise<boolean>;
 }

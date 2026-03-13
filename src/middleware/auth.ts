@@ -36,4 +36,42 @@ const AuthToken = asyncHandler(async (req: Request, _, next: NextFunction) => {
     }
 });
 
-export default AuthToken;
+const AuthSystemUser = asyncHandler(async (req, res, next) => {
+
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1]
+
+    if (!token) {
+        throw new ApiError(401, "Unauthorized access, token is missing")
+    }
+
+    // const isBlacklisted = await tokenBlackListModel.findOne({ token })
+
+    // if (isBlacklisted) {
+    //     return res.status(401).json({
+    //         message: "Unauthorized access, token is invalid"
+    //     })
+    // }
+
+    try {
+        const decoded = JWT.verify(token, process.env.JWT_SECRET_KEY || "secretkey") as { _id: string }
+
+        const user = await User.findById(decoded?._id).select("+systemUser") as UserType | null;
+        if (!user || !user.systemUser) {
+            return res.status(403).json({
+                message: "Forbidden access, not a system user"
+            })
+        }
+
+        req.user = user
+
+        return next()
+    }
+    catch (err) {
+        return res.status(401).json({
+            message: "Unauthorized access, token is invalid"
+        })
+    }
+
+})
+
+export default { AuthToken, AuthSystemUser };
