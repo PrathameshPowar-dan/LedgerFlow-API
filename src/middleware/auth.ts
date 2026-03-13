@@ -67,9 +67,8 @@ const AuthSystemUser = asyncHandler(async (req, res, next) => {
         return next()
     }
     catch (err) {
-        return res.status(401).json({
-            message: "Unauthorized access, token is invalid"
-        })
+        console.log("AuthSystemUser: ", err);
+        throw new ApiError(401, "Unauthorized access, token is invalid")
     }
 
 })
