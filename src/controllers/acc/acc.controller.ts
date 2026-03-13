@@ -8,6 +8,10 @@ import Account from "../../models/acc.models";
 export const CreateACC = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user;
 
+    if (!user) {
+        throw new ApiError(401, "User not authenticated");
+    }
+
     const account = await Account.create({
         user: user._id
     })
