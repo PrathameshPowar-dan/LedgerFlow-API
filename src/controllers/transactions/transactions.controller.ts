@@ -167,56 +167,55 @@ export const CreateIFT = asyncHandler(async (req: Request, res: Response) => {
 
     const toUserAccount = await Account.findOne({
         _id: toAccount,
-    })
+    });
 
     if (!toUserAccount) {
         throw new ApiError(400, "Invalid toAccount");
     }
 
-    // Account Check up
-    if (req.user?._id.toString() === toUserAccount._id.toString()) {
-        throw new ApiError(400, "Cannot transfer funds to the same account");
-    }
-
     const fromUserAccount = await Account.findOne({
         user: req.user._id
-    })
+    });
 
     if (!fromUserAccount) {
         throw new ApiError(400, "System user account not found");
     }
 
+    if (fromUserAccount._id.toString() === toUserAccount._id.toString()) {
+        throw new ApiError(400, "Cannot transfer funds to the same account");
+    }
+
     let transaction;
     try {
-        const session = await mongoose.startSession()
-        session.startTransaction()
+        const session = await mongoose.startSession();
+        session.startTransaction();
 
         transaction = new Transaction({
             fromAccount: fromUserAccount._id,
-            toAccount,
-            amount,
+            toAccount: toUserAccount._id,
+            amount: numAmount,
             idempotencyKey,
             status: "PENDING"
-        })
+        });
 
         const debitLedgerEntry = await Ledger.create([{
             account: fromUserAccount._id,
-            amount: Number(amount),
+            amount: numAmount,
             transaction: transaction._id,
             type: "DEBIT"
-        }], { session })
+        }], { session });
 
         const creditLedgerEntry = await Ledger.create([{
             account: toUserAccount._id,
-            amount: Number(amount),
+            amount: numAmount,
             transaction: transaction._id,
             type: "CREDIT"
-        }], { session })
+        }], { session });
 
-        transaction.status = "COMPLETED"
-        await transaction.save({ session })
+        transaction.status = "COMPLETED";
+        await transaction.save({ session });
 
-        await session.commitTransaction()
+        await session.commitTransaction();
         session.endSession();
 
     } catch (err) {
@@ -224,8 +223,11 @@ export const CreateIFT = asyncHandler(async (req: Request, res: Response) => {
         throw new ApiError(400, "Initial Funds Transaction Error, please retry after sometime")
     }
 
-    // Send Email
-    await sendTransactionEmail({ userEmail: req.user.email, name: req.user.name, amount, toAccount })
+    try {
+        await sendTransactionEmail({ userEmail: req.user.email, name: req.user.name, amount: numAmount, toAccount });
+    } catch (emailError) {
+        console.error("Non-fatal: Failed to send IFT receipt email", emailError);
+    }
 
     return res.status(201).json(
         new ApiResponse(201, { transaction: transaction }, "Initial funds transaction completed successfully")
