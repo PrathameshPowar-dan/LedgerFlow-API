@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../../utils/AsyncHandler";
 import User from "../../models/user.models";
+import TokenBlacklist from "../../models/blacklist.models";
 import { ApiError } from "../../utils/ApiError";
 import { ApiResponse } from "../../utils/ApiResponse";
 import { OptionsType, UserType } from "../../types/type";
@@ -110,8 +111,22 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
 // Logout User
 export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
+    const Token = req.cookies?.Token || req.headers.authorization?.split(" ")[1];
+
+    if (Token) {
+        // 2. Check if the token is already blacklisted to prevent duplicate key errors
+        const isAlreadyBlacklisted = await TokenBlacklist.findOne({ token: Token });
+        
+        // 3. If not blacklisted, add it
+        if (!isAlreadyBlacklisted) {
+            await TokenBlacklist.create({ token: Token });
+        }
+    }
+
+    // 4. Clear the cookie
     res.clearCookie("Token");
+
     return res.status(200).json(
         new ApiResponse(200, null, "User Logged Out Successfully")
-    )
+    );
 });

@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError";
 import { asyncHandler } from "../utils/AsyncHandler";
 import JWT from "jsonwebtoken";
 import { UserType } from "../types/type";
+import TokenBlacklist from "../models/blacklist.models";
 
 declare global {
     namespace Express {
@@ -19,6 +20,12 @@ const AuthToken = asyncHandler(async (req: Request, _, next: NextFunction) => {
 
         if (!Token) {
             throw new ApiError(401, "UNAUTHORIZED ACCESS");
+        }
+
+        const isBlacklisted = await TokenBlacklist.findOne({ Token })
+
+        if (isBlacklisted) {
+            throw new ApiError(401, "Unauthorized access, token is invalid")
         }
 
         const DecodedToken = JWT.verify(Token, process.env.JWT_SECRET_KEY || "secretkey") as { _id: string };
@@ -44,13 +51,11 @@ const AuthSystemUser = asyncHandler(async (req, res, next) => {
         throw new ApiError(401, "Unauthorized access, token is missing")
     }
 
-    // const isBlacklisted = await tokenBlackListModel.findOne({ token })
+    const isBlacklisted = await TokenBlacklist.findOne({ token })
 
-    // if (isBlacklisted) {
-    //     return res.status(401).json({
-    //         message: "Unauthorized access, token is invalid"
-    //     })
-    // }
+    if (isBlacklisted) {
+        throw new ApiError(401, "Unauthorized access, token is invalid")
+    }
 
     try {
         const decoded = JWT.verify(token, process.env.JWT_SECRET_KEY || "secretkey") as { _id: string }
